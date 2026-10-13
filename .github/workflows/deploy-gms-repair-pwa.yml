@@ -1,0 +1,38 @@
+name: Deploy GMS Repair Hub PWA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android-secure/**'
+      - 'deploy/build-pwa.sh'
+      - '.github/workflows/deploy-gms-repair-pwa.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: gms-pages
+  cancel-in-progress: false
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Build installable Repair Hub website
+        run: |
+          python3 -m pip install --quiet --break-system-packages pillow || true
+          bash deploy/build-pwa.sh
+          test -s site/index.html
+          test -s site/manifest.webmanifest
+          test -s site/privacy.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Publish GMS Repair Hub
+        id: deployment
+        uses: actions/deploy-pages@v4
