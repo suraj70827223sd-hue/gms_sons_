@@ -11,8 +11,8 @@ from pathlib import Path
 import json, subprocess, sys
 site = Path('site')
 head = '''  <meta name="theme-color" content="#071d40">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
 '''
 index = site.joinpath('index.html')
@@ -20,7 +20,8 @@ html = index.read_text(encoding='utf-8')
 if 'manifest.webmanifest' not in html:
     html = html.replace('</head>', head + '</head>')
 if "serviceWorker.register" not in html:
-    html = html.replace('</body>', '<script>if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("/service-worker.js").catch(()=>{}));</script></body>')
+    html = html.replace('</body>', '<script>if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));</script></body>')
+html = html.replace('</footer>', '<div style="text-align:center;padding:12px"><a style="color:inherit" href="./privacy.html">Privacy Policy</a></div></footer>')
 index.write_text(html, encoding='utf-8')
 # Resample the original Android app icon if Pillow is available; fallback
 # keeps a usable 192px icon without claiming a 512px resource.
@@ -32,13 +33,13 @@ try:
     has_512 = True
 except ImportError:
     pass
-icons = [{"src":"/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"}]
+icons = [{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"}]
 if has_512:
-    icons.append({"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"})
-manifest = {"name":"GMS SONS TRADERS Secure Repair Hub","short_name":"GMS Repair Hub","description":"Electronics repair guides and WhatsApp repair enquiries","start_url":"/","scope":"/","display":"standalone","background_color":"#071d40","theme_color":"#071d40","icons":icons}
+    icons.append({"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"})
+manifest = {"name":"GMS SONS TRADERS Secure Repair Hub","short_name":"GMS Repair Hub","description":"Electronics repair guides and WhatsApp repair enquiries","start_url":"./","scope":"./","display":"standalone","background_color":"#071d40","theme_color":"#071d40","icons":icons}
 (site/'manifest.webmanifest').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
 (site/'service-worker.js').write_text('''const CACHE="gms-repair-hub-v1";
-self.addEventListener("install", e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["/","/index.html","/style.css","/app.js","/auth.js","/protection.css","/protection.js","/assets/logo.jpg"]))));
+self.addEventListener("install", e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["./","./index.html","./style.css","./app.js","./auth.js","./protection.css","./protection.js","./assets/logo.jpg"]))));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener("fetch",e=>{const u=new URL(e.request.url);if(e.request.method!=="GET"||u.origin!==location.origin)return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
 ''')
